@@ -10,4 +10,4 @@ declare function AVArgs<T extends Arg<string, any>[]>(message: Message, ...parse
     parsed: GetType<T>;
     default: string[];
 }>;
-export { AVString as String, AVAny as Any, AVNumber as Number, AVSnowflake as Snowflake, AVUser as User, AVMember as Member, AVArgs as Parse, };
+export { AVString as string, AVAny as any, AVNumber as number, AVSnowflake as snowflake, AVUser as user, AVMember as member, AVArgs as parse, };

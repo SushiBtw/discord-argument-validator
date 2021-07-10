@@ -10,7 +10,9 @@ exports.ArgParseErrors = {
     'InvalidArgsSize': 'The provided arguments length is not valid',
     'InvalidEmail': 'The provided string was not an email',
     'InvalidRegex': 'The provided string was not an provided regex',
-    'UnknownUser': 'The provided argument was not a user'
+    'UnknownUser': 'The provided argument was not a user',
+    'UnknownMember': 'The provided argument was not a member',
+    'MessageMissing': 'Message object was missing or invalid'
 };
 var ArgParseError = /** @class */ (function () {
     function ArgParseError(options) {

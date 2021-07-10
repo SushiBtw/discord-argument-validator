@@ -12,10 +12,15 @@ npm i discord-argument-validator
 const AV = require('discord-argument-validator');
 // import AV from 'discord-argument-validator';
 
-// Create a argument validator (string 2-10 chars)
+// With single argument:
 let validator1 = AV.string().min(2).max(10);
-const Parse = AV.Parse(message, validator1);
+validator1.parse('MyString') // => Passes
+validator1.parse('MyStringButLonger') // => Throws ArgParseError
 
-await Parse('MyString') // => Passes
-await Parse('MyStringButLonger') // => Throws ArgParseError
+// With more arguments:
+let validator2 = AV.number().min(5);
+const parse = AV.parse(message, validator1, validator2);
+
+await parse(['MyString', 5]) // => Passes
+await parse(['MyString', 1]) // => Throws ArgParseError
 ```

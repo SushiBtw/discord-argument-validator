@@ -256,8 +256,6 @@ function AVArgs<T extends Arg<string, any>[]>(message: Message, ...parsers: T): 
     return async (rawArgs) => {
 
         let { _remaining } = parsers.slice(-1)[0];
-        if(_remaining)
-            console.log('last sum up!');
 
         if (
             rawArgs.length < parsers.length
@@ -275,7 +273,6 @@ function AVArgs<T extends Arg<string, any>[]>(message: Message, ...parsers: T): 
             let arg = rawArgs[i];
             if(parser._remaining && rawArgs.length > parsers.length)
                 arg += ' ' + rawArgs.slice(parsers.length).join(' ');
-            console.log(arg);
             parser._id = i;
             res[i] = await parser.parse(arg, message);
         }
@@ -288,11 +285,11 @@ function AVArgs<T extends Arg<string, any>[]>(message: Message, ...parsers: T): 
 }
 
 export {
-    AVString as String,
-    AVAny as Any,
-    AVNumber as Number,
-    AVSnowflake as Snowflake,
-    AVUser as User,
-    AVMember as Member,
-    AVArgs as Parse,
+    AVString as string,
+    AVAny as any,
+    AVNumber as number,
+    AVSnowflake as snowflake,
+    AVUser as user,
+    AVMember as member,
+    AVArgs as parse,
 };

@@ -3,7 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/../avcheck/avcheck.iml" filepath="$PROJECT_DIR$/../avcheck/avcheck.iml" />
-      <module fileurl="file://$PROJECT_DIR$/avchecker.iml" filepath="$PROJECT_DIR$/avchecker.iml" />
+      <module fileurl="file://$PROJECT_DIR$/discord-arguments-validator.iml" filepath="$PROJECT_DIR$/discord-arguments-validator.iml" />
     </modules>
   </component>
 </project>

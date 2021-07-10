@@ -51,7 +51,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Parse = exports.Member = exports.User = exports.Snowflake = exports.Number = exports.Any = exports.String = void 0;
+exports.parse = exports.member = exports.user = exports.snowflake = exports.number = exports.any = exports.string = void 0;
 var types_1 = require("./types");
 var discord_js_1 = require("discord.js");
 var ArgBase = /** @class */ (function () {
@@ -361,19 +361,19 @@ var MemberArgParser = /** @class */ (function (_super) {
 * AVTypes
 */
 var AVString = function () { return new StringArgParser(); };
-exports.String = AVString;
+exports.string = AVString;
 var AVNumber = function () { return new IntArgParser(); };
-exports.Number = AVNumber;
+exports.number = AVNumber;
 var AVSnowflake = function () { return new SnowflakeArgParser(); };
-exports.Snowflake = AVSnowflake;
+exports.snowflake = AVSnowflake;
 var AVAny = function () { return new AnyArgParser(); };
-exports.Any = AVAny;
+exports.any = AVAny;
 // @ts-ignore
 var AVUser = function () { return new UserArgParser(); };
-exports.User = AVUser;
+exports.user = AVUser;
 // @ts-ignore
 var AVMember = function () { return new MemberArgParser(); };
-exports.Member = AVMember;
+exports.member = AVMember;
 /*
 * AVCheckers
 */
@@ -389,8 +389,6 @@ function AVArgs(message) {
             switch (_c.label) {
                 case 0:
                     _remaining = parsers.slice(-1)[0]._remaining;
-                    if (_remaining)
-                        console.log('last sum up!');
                     if (rawArgs.length < parsers.length
                         ||
                             !_remaining && rawArgs.length > parsers.length)
@@ -408,7 +406,6 @@ function AVArgs(message) {
                     arg = rawArgs[i];
                     if (parser._remaining && rawArgs.length > parsers.length)
                         arg += ' ' + rawArgs.slice(parsers.length).join(' ');
-                    console.log(arg);
                     parser._id = i;
                     _a = res;
                     _b = i;
@@ -427,4 +424,4 @@ function AVArgs(message) {
         });
     }); };
 }
-exports.Parse = AVArgs;
+exports.parse = AVArgs;
