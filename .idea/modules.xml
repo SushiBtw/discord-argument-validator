@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../avcheck/avcheck.iml" filepath="$PROJECT_DIR$/../avcheck/avcheck.iml" />
+      <module fileurl="file://$PROJECT_DIR$/avchecker.iml" filepath="$PROJECT_DIR$/avchecker.iml" />
+    </modules>
+  </component>
+</project>
