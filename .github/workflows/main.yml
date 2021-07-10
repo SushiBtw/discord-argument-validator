@@ -11,4 +11,4 @@ jobs:
         uses: FuLagann/tsc-build-push@v1
         with:
           message: "Automatically built unbuilt typescript"
-          directories: ./src/
+          directories: ./
