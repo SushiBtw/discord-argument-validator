@@ -21,6 +21,7 @@ abstract class ArgBase<N extends string, T> implements Arg<N, T> {
     constructor() {}
     abstract parse(v: any): T;
     _remaining: boolean = false;
+    _optional: boolean = false;
     _id: number = 0;
 
     protected constraint(fn: (v: T) => T): this {
@@ -34,6 +35,11 @@ abstract class ArgBase<N extends string, T> implements Arg<N, T> {
 
     remaining(r: boolean = true): this {
         this._remaining = r;
+        return this;
+    }
+
+    optional(r: boolean = true): this {
+        this._optional = r;
         return this;
     }
 }
@@ -256,9 +262,10 @@ function AVArgs<T extends Arg<string, any>[]>(message: Message, ...parsers: T): 
     return async (rawArgs) => {
 
         let { _remaining } = parsers.slice(-1)[0];
+        let _optionals = parsers.filter(parser => { return parser._optional }).length;
 
         if (
-            rawArgs.length < parsers.length
+            rawArgs.length < parsers.length - _optionals
             ||
             !_remaining && rawArgs.length > parsers.length
         ) throw new ArgParseError({

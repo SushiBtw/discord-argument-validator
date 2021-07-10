@@ -57,6 +57,7 @@ var discord_js_1 = require("discord.js");
 var ArgBase = /** @class */ (function () {
     function ArgBase() {
         this._remaining = false;
+        this._optional = false;
         this._id = 0;
     }
     ArgBase.prototype.constraint = function (fn) {
@@ -70,6 +71,11 @@ var ArgBase = /** @class */ (function () {
     ArgBase.prototype.remaining = function (r) {
         if (r === void 0) { r = true; }
         this._remaining = r;
+        return this;
+    };
+    ArgBase.prototype.optional = function (r) {
+        if (r === void 0) { r = true; }
+        this._optional = r;
         return this;
     };
     return ArgBase;
@@ -384,12 +390,13 @@ function AVArgs(message) {
         parsers[_i - 1] = arguments[_i];
     }
     return function (rawArgs) { return __awaiter(_this, void 0, void 0, function () {
-        var _remaining, res, i, parser, arg, _a, _b;
+        var _remaining, _optionals, res, i, parser, arg, _a, _b;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
                     _remaining = parsers.slice(-1)[0]._remaining;
-                    if (rawArgs.length < parsers.length
+                    _optionals = parsers.filter(function (parser) { return parser._optional; }).length;
+                    if (rawArgs.length < parsers.length - _optionals
                         ||
                             !_remaining && rawArgs.length > parsers.length)
                         throw new types_1.ArgParseError({

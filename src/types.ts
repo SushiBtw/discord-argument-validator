@@ -45,7 +45,9 @@ export interface ArgParseInterface {
 export interface Arg<N extends string, T> {
     parse(v: any, message?: Message): T;
     remaining(r?: boolean): this;
+    optional(r?: boolean): this;
     _remaining: boolean;
+    _optional: boolean;
     _id: number;
 }
 
