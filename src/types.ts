@@ -1,4 +1,4 @@
-import {Client, User, Snowflake, Message, GuildMember } from 'discord.js';
+import { User, Snowflake, Message, GuildMember } from 'discord.js';
 export const ArgParseErrors: { [key: string]: string; } = {
     'InvalidNumber': 'The provided number was invalid',
     'InvalidString': 'The provided string was invalid',
