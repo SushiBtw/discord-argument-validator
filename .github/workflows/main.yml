@@ -15,5 +15,7 @@ jobs:
       - name: Building Typescript
         uses: FuLagann/tsc-build-push@v1
         with:
+          user-name: "SushiBtw"
+          user-email: "kalinowskiadam2003@gmail.com"
           message: "Automatically built unbuilt typescript"
           directories: ./
