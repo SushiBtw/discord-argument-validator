@@ -19,8 +19,8 @@ validator1.parse('MyStringButLonger') // => Throws ArgParseError
 
 // With more arguments:
 let validator2 = AV.number().min(5);
-const parse = AV.parse(message, validator1, validator2);
+const parse = AV.parse(validator1, validator2);
 
-await parse(['MyString', 5]) // => Passes
-await parse(['MyString', 1]) // => Throws ArgParseError
+await parse(message, ['MyString', 5]) // => Passes
+await parse(message, ['MyString', 1]) // => Throws ArgParseError
 ```
