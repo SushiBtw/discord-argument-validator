@@ -1,4 +1,4 @@
-import { User, Snowflake, Message, GuildMember } from 'discord.js';
+import { User, Snowflake, Message, GuildMember, Channel, Role } from 'discord.js';
 export const ArgParseErrors: { [key: string]: string; } = {
     'InvalidNumber': 'The provided number was invalid',
     'InvalidString': 'The provided string was invalid',
@@ -6,10 +6,13 @@ export const ArgParseErrors: { [key: string]: string; } = {
     'TooSmall': 'The provided number/string length was too small',
     'TooBig': 'The provided number/string length was too big',
     'InvalidArgsSize': 'The provided arguments length is not valid',
+    'ArgumentRequired': 'The provided argument was null or undefined',
     'InvalidEmail': 'The provided string was not an email',
     'InvalidRegex': 'The provided string was not an provided regex',
     'UnknownUser': 'The provided argument was not a user',
     'UnknownMember': 'The provided argument was not a member',
+    'UnknownChannel': 'The provided argument was not a channel',
+    'UnknownRole': 'The provided argument was not a role',
     'MessageMissing': 'Message object was missing or invalid'
 }
 export class ArgParseError {
@@ -67,11 +70,23 @@ export interface SnowflakeArg<N extends string> extends Arg<N, string> {
 export interface AnyArg<N extends string> extends Arg<N, string> {
 
 }
-export interface UserArg<N extends string> extends Arg<N, User|Snowflake> {
+export interface UserArg<N extends string> extends Arg<N, Promise<User | undefined>> {
 
 }
-export interface MemberArg<N extends string> extends Arg<N, GuildMember|Snowflake> {
+export interface MemberArg<N extends string> extends Arg<N, Promise<GuildMember | undefined>> {
 
+}
+
+export interface ChannelArg<N extends string> extends Arg<N, Channel | undefined> {
+
+}
+
+export interface RoleArg<N extends string> extends Arg<N, Role | undefined> {
+
+}
+
+export interface UserExtended extends User {
+    member?: GuildMember;
 }
 
 export type GetType<T extends unknown[]> =

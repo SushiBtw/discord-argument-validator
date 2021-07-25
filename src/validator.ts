@@ -6,16 +6,18 @@ import {
     ArgParseErrors,
     ArgParseInterface,
     GetType,
+    UserExtended,
     // Args
     IntArg,
     AnyArg,
     SnowflakeArg,
     StringArg,
     UserArg,
-    MemberArg
+    MemberArg,
+    ChannelArg,
+    RoleArg
 } from './types';
-
-import { Snowflake, User, Message, Guild, GuildMember } from 'discord.js';
+import { Snowflake, User, Message, Guild, GuildMember, Channel, Role } from 'discord.js';
 
 abstract class ArgBase<N extends string, T> implements Arg<N, T> {
     constructor() {}
@@ -153,9 +155,8 @@ class AnyArgParser<N extends string> extends ArgBase<N, string> implements AnyAr
     }
 }
 
-class UserArgParser<N extends string> extends ArgBase<N, User|Snowflake> implements UserArg<N> {
-    // @ts-ignore
-    async parse(user: User | Snowflake, message?: Message) {
+class UserArgParser<N extends string> extends ArgBase<N, Promise<User | undefined>> implements UserArg<N> {
+    async parse(user: string, message?: Message) {
         if (!message)
             throw new ArgParseError({
                 arg: this._id,
@@ -163,12 +164,14 @@ class UserArgParser<N extends string> extends ArgBase<N, User|Snowflake> impleme
                 got: message,
                 expected: Message.name,
             });
-        if (user instanceof User)
-            return user;
         if (RegexList.userOrMember.test(user)) {
             let returnValue = message.client.user?.bot ?
-                // @ts-ignore
-                await message.client.users.fetch(RegexList.userOrMember.exec(user)[1]).catch(() => null) : message.client.users.cache.get(RegexList.userOrMember.exec(user)[1]);
+                await message.client.users.fetch(
+                    RegexList.userOrMember.exec(user)![1]
+                ).catch(() => null) :
+                message.client.users.cache.get(
+                    RegexList.userOrMember.exec(user)![1]
+                );
             if(!returnValue)
                 throw new ArgParseError({
                     arg: this._id,
@@ -176,18 +179,25 @@ class UserArgParser<N extends string> extends ArgBase<N, User|Snowflake> impleme
                     got: user,
                     expected: User.name,
                 });
-            else return returnValue;
+            else {
+                (returnValue as UserExtended).member = message.guild?.members.cache.get(returnValue?.id);
+                return returnValue;
+            }
 
-        } else if (message.guild instanceof Guild) {
+        } else if (message.guild) {
             const users = await message.guild.members.fetch({query: user, limit: 1}).catch(() => null);
-            if(!users?.first()?.user)
+            let returnValue = users?.first()?.user;
+            if(!returnValue)
                 throw new ArgParseError({
                     arg: this._id,
                     key: 'UnknownUser',
                     got: user,
                     expected: User.name,
                 });
-            else return users.first()?.user;
+            else {
+                (returnValue as UserExtended).member = message.guild.members.cache.get(returnValue.id);
+                return returnValue;
+            }
         } else throw new ArgParseError({
             arg: this._id,
             key: 'UnknownUser',
@@ -197,9 +207,8 @@ class UserArgParser<N extends string> extends ArgBase<N, User|Snowflake> impleme
     }
 }
 
-class MemberArgParser<N extends string> extends ArgBase<N, GuildMember|Snowflake> implements MemberArg<N> {
-    // @ts-ignore
-    async parse(member: GuildMember | Snowflake, message?: Message) {
+class MemberArgParser<N extends string> extends ArgBase<N, Promise<GuildMember | undefined>> implements MemberArg<N> {
+    async parse(member: string, message?: Message) {
         if (!message)
             throw new ArgParseError({
                 arg: this._id,
@@ -207,12 +216,14 @@ class MemberArgParser<N extends string> extends ArgBase<N, GuildMember|Snowflake
                 got: message,
                 expected: Message.name,
             });
-        if (member instanceof GuildMember)
-            return member;
         if (RegexList.userOrMember.test(member)) {
             let returnValue = message.client.user?.bot ?
-                // @ts-ignore
-                await message.client.users.fetch(RegexList.userOrMember.exec(member)[1]).catch(() => null) : message.client.users.cache.get(RegexList.userOrMember.exec(member)[1]);
+                await message.client.users.fetch(
+                    RegexList.userOrMember.exec(member)![1]
+                ).catch(() => null) :
+                message.client.users.cache.get(
+                    RegexList.userOrMember.exec(member)![1]
+                );
             if(!returnValue)
                 throw new ArgParseError({
                     arg: this._id,
@@ -243,6 +254,70 @@ class MemberArgParser<N extends string> extends ArgBase<N, GuildMember|Snowflake
     }
 }
 
+class ChannelArgParser<N extends string> extends ArgBase<N, Channel | undefined> implements ChannelArg<N> {
+    parse(channel: string, message?: Message) {
+        if (!message)
+            throw new ArgParseError({
+                arg: this._id,
+                key: 'MessageMissing',
+                got: message,
+                expected: Message.name,
+            });
+        if(message.guild && RegexList.channel.test(channel)) {
+            let returnValue = message.guild.channels.cache.get(
+                RegexList.channel.exec(channel)![1]
+            );
+            if(!returnValue)
+                throw new ArgParseError({
+                    arg: this._id,
+                    key: 'UnknownChannel',
+                    got: channel,
+                    expected: Channel.name,
+                });
+            return returnValue;
+        } else {
+            throw new ArgParseError({
+                arg: this._id,
+                key: 'UnknownChannel',
+                got: channel,
+                expected: Channel.name,
+            });
+        }
+    }
+}
+
+class RoleArgParser<N extends string> extends ArgBase<N, Role | undefined> implements RoleArg<N> {
+    parse(role: string, message?: Message) {
+        if (!message)
+            throw new ArgParseError({
+                arg: this._id,
+                key: 'MessageMissing',
+                got: message,
+                expected: Message.name,
+            });
+        if(message.guild && RegexList.role.test(role)) {
+            let returnValue = message.guild.roles.cache.get(
+                RegexList.role.exec(role)![1]
+            );
+            if(!returnValue)
+                throw new ArgParseError({
+                    arg: this._id,
+                    key: 'UnknownRole',
+                    got: role,
+                    expected: Role.name,
+                });
+            return returnValue;
+        } else {
+            throw new ArgParseError({
+                arg: this._id,
+                key: 'UnknownRole',
+                got: role,
+                expected: Role.name,
+            });
+        }
+    }
+}
+
 /*
 * AVTypes
 */
@@ -250,38 +325,40 @@ const AVString = <N extends string>(): StringArg<N> => new StringArgParser();
 const AVNumber = <N extends string>(): IntArg<N> => new IntArgParser();
 const AVSnowflake = <N extends string>(): SnowflakeArg<N> => new SnowflakeArgParser();
 const AVAny = <N extends string>(): AnyArg<N> => new AnyArgParser();
-// @ts-ignore
 const AVUser = <N extends string>(): UserArg<N> => new UserArgParser();
-// @ts-ignore
 const AVMember = <N extends string>(): MemberArg<N> => new MemberArgParser();
+const AVChannel = <N extends string>(): ChannelArg<N> => new ChannelArgParser();
+const AVRole = <N extends string>(): RoleArg<N> => new RoleArgParser();
 
 /*
 * AVCheckers
 */
-function AVArgs<T extends Arg<string, any>[]>(message: Message, ...parsers: T): (rawArgs: string[]) => Promise<{ parsed: GetType<T>; default: string[]; }> {
-    return async (rawArgs) => {
-
-        let { _remaining } = parsers.slice(-1)[0];
-        let _optionals = parsers.filter(parser => { return parser._optional }).length;
-
-        if (
-            rawArgs.length < parsers.length - _optionals
-            ||
-            !_remaining && rawArgs.length > parsers.length
-        ) throw new ArgParseError({
-            key: 'InvalidArgsSize',
-            got: rawArgs.length,
-            expected: parsers.length
-        });
-
+function AVArgs<T extends Arg<string, any>[]>(...parsers: T): (message: Message, rawArgs: string[]) => Promise<{ parsed: GetType<T>; default: string[]; }> {
+    return async (message, rawArgs) => {
         const res: any = [];
         for (let i = 0; i < parsers.length; i++) {
             const parser = parsers[i];
             let arg = rawArgs[i];
-            if(parser._remaining && rawArgs.length > parsers.length)
-                arg += ' ' + rawArgs.slice(parsers.length).join(' ');
-            parser._id = i;
-            res[i] = await parser.parse(arg, message);
+            // Check if argument exists, if no - move next step, elsewhere parse it.
+            if(arg) {
+                if(parser._remaining && rawArgs.length > parsers.length)
+                    arg += ' ' + rawArgs.slice(parsers.length).join(' ');
+                parser._id = i;
+                res[i] = await parser.parse(arg, message);
+            }
+            // Check if argument is optional, if no - throw error.
+            else if(!parser._optional) {
+                throw new ArgParseError({
+                    key: 'ArgumentRequired',
+                    got: arg,
+                    expected: parser.constructor.name.slice(0, -9),
+                    arg: i,
+                });
+            }
+            // If it's optional but not exists, ignore and move on.
+            else {
+                res[i] = undefined;
+            }
         }
 
         return {
@@ -298,5 +375,7 @@ export {
     AVSnowflake as snowflake,
     AVUser as user,
     AVMember as member,
+    AVChannel as channel,
+    AVRole as role,
     AVArgs as parse,
 };
