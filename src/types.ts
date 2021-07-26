@@ -14,6 +14,7 @@ export const ArgParseErrors: { [key: string]: string; } = {
     'UnknownChannel': 'The provided argument was not a channel',
     'UnknownEmoji': 'The provided argument was not a emoji',
     'InvalidChannelType': 'The provided channel argument was not included in the array bound',
+    'InvalidEmojiType': 'The provided emoji argument was not included in the array bound',
     'UnknownRole': 'The provided argument was not a role',
     'MessageMissing': 'Message object was missing or invalid',
     'InvalidInclude': 'The provided argument was not included in the array bound'
@@ -82,6 +83,7 @@ export interface EmojiArg<N extends string> extends Arg<N, Emoji> {}
 
 export interface UserExtended extends User {
     member?: GuildMember;
+    messageCreator: GuildMember|null;
 }
 export type ChannelType = 'text'|'dm'|'voice'|'group'|'category'|'news'|'store'|'unknown';
 export type EmojiType = 'global'|'unicode';

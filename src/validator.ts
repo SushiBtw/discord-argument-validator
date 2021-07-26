@@ -209,6 +209,7 @@ class UserArgParser<N extends string> extends ArgBase<N, Promise<User | undefine
                 });
             else {
                 (returnValue as UserExtended).member = message.guild?.members.cache.get(returnValue?.id);
+                (returnValue as UserExtended).messageCreator = message.member;
                 return returnValue;
             }
 
@@ -224,6 +225,7 @@ class UserArgParser<N extends string> extends ArgBase<N, Promise<User | undefine
                 });
             else {
                 (returnValue as UserExtended).member = message.guild.members.cache.get(returnValue.id);
+                (returnValue as UserExtended).messageCreator = message.member;
                 return returnValue;
             }
         } else throw new ArgParseError({
@@ -437,26 +439,19 @@ function AVArgs<T extends Arg<string, any>[]>(...parsers: T): (message: Message,
         for (let i = 0; i < parsers.length; i++) {
             const parser = parsers[i];
             let arg = rawArgs[i];
-            // Check if argument exists, if no - move next step, elsewhere parse it.
             if(arg) {
                 if(parser._remaining && rawArgs.length > parsers.length)
                     arg += ' ' + rawArgs.slice(parsers.length).join(' ');
                 parser._id = i;
                 res[i] = await parser.parse(arg, message);
-            }
-            // Check if argument is optional, if no - throw error.
-            else if(!parser._optional) {
+            } else if(!parser._optional) {
                 throw new ArgParseError({
                     key: 'ArgumentRequired',
                     got: arg,
                     expected: parser.constructor.name.slice(0, -9),
                     arg: i,
                 });
-            }
-            // If it's optional but not exists, ignore and move on.
-            else {
-                res[i] = undefined;
-            }
+            } else res[i] = undefined;
         }
 
         return {
