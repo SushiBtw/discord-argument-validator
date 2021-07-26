@@ -15,31 +15,57 @@ import {
     UserArg,
     MemberArg,
     ChannelArg,
-    RoleArg
+    RoleArg,
+    ChannelType
 } from './types';
 import { Snowflake, User, Message, Guild, GuildMember, Channel, Role } from 'discord.js';
 
 abstract class ArgBase<N extends string, T> implements Arg<N, T> {
     constructor() {}
-    abstract parse(v: any): T;
+    abstract parse(v: any, m?: Message): T;
     _remaining: boolean = false;
     _optional: boolean = false;
     _id: number = 0;
 
     protected constraint(fn: (v: T) => T): this {
         const parse = this.parse;
-        this.parse = (v: any): T => {
-            const res = parse(v);
+        this.parse = (v: any, m?: Message): T => {
+            const res = parse(v, m);
             return fn(res);
         }
         return this;
     }
+    includes(r: any[], strict = false): this {
 
+        return this.constraint((v: any): any => {
+            let _boolean: boolean = false;
+            if(strict) {
+                _boolean = r.includes(v);
+            } else {
+                _boolean = r.some(
+                    val =>
+                    typeof val === 'string' && typeof v === 'string' ?
+                    val.toLowerCase() === v.toLowerCase() :
+                    val === v
+                )
+            }
+
+            if(!_boolean)
+                throw new ArgParseError({
+                    arg: this._id,
+                    key: `InvalidInclude`,
+                    expected: r,
+                    got: v
+                });
+            return v;
+        });
+
+        return this;
+    }
     remaining(r: boolean = true): this {
         this._remaining = r;
         return this;
     }
-
     optional(r: boolean = true): this {
         this._optional = r;
         return this;
@@ -283,6 +309,19 @@ class ChannelArgParser<N extends string> extends ArgBase<N, Channel | undefined>
                 expected: Channel.name,
             });
         }
+    }
+
+    type(s: ChannelType[]) {
+        return this.constraint((v: Channel | undefined): Channel | undefined => {
+            if(!s.includes(v!.type))
+                throw new ArgParseError({
+                    arg: this._id,
+                    key: 'InvalidChannelType',
+                    expected: s,
+                    got: v!.type
+                });
+            return v;
+        });
     }
 }
 

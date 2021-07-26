@@ -12,8 +12,10 @@ export const ArgParseErrors: { [key: string]: string; } = {
     'UnknownUser': 'The provided argument was not a user',
     'UnknownMember': 'The provided argument was not a member',
     'UnknownChannel': 'The provided argument was not a channel',
+    'InvalidChannelType': 'The provided channel argument was not included in the array bound',
     'UnknownRole': 'The provided argument was not a role',
-    'MessageMissing': 'Message object was missing or invalid'
+    'MessageMissing': 'Message object was missing or invalid',
+    'InvalidInclude': 'The provided argument was not included in the array bound'
 }
 export class ArgParseError {
     public options?: ArgParseInterface;
@@ -34,6 +36,7 @@ export const RegexList = {
     userOrMember: new RegExp("^(?:<@!?)?(\\d{17,21})>?$"),
     channel: new RegExp("^(?:<#)?(\\d{17,21})>?$"),
     role: new RegExp("^(?:<@&)?(\\d{17,21})>?$"),
+    emoji: new RegExp("(<a?)?:\\w+:(\\d{18}>)?"),
     snowflake: new RegExp("^(\\d{17,21})$"),
     email: new RegExp(/^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i)
 };
@@ -49,6 +52,7 @@ export interface Arg<N extends string, T> {
     parse(v: any, message?: Message): T;
     remaining(r?: boolean): this;
     optional(r?: boolean): this;
+    includes(r: any[], strict?: boolean): this;
     _remaining: boolean;
     _optional: boolean;
     _id: number;
@@ -64,31 +68,29 @@ export interface IntArg<N extends string> extends Arg<N, number> {
     min(n: number): this;
     max(n: number): this;
 }
-export interface SnowflakeArg<N extends string> extends Arg<N, string> {
-
-}
-export interface AnyArg<N extends string> extends Arg<N, string> {
-
-}
-export interface UserArg<N extends string> extends Arg<N, Promise<User | undefined>> {
-
-}
-export interface MemberArg<N extends string> extends Arg<N, Promise<GuildMember | undefined>> {
-
-}
-
+export interface SnowflakeArg<N extends string> extends Arg<N, string> {}
+export interface AnyArg<N extends string> extends Arg<N, string> {}
+export interface UserArg<N extends string> extends Arg<N, Promise<User | undefined>> {}
+export interface MemberArg<N extends string> extends Arg<N, Promise<GuildMember | undefined>> {}
 export interface ChannelArg<N extends string> extends Arg<N, Channel | undefined> {
-
+    type(s: ChannelType[]): this;
 }
-
-export interface RoleArg<N extends string> extends Arg<N, Role | undefined> {
-
-}
+export interface RoleArg<N extends string> extends Arg<N, Role | undefined> {}
 
 export interface UserExtended extends User {
     member?: GuildMember;
 }
-
+export type ChannelType = 'text'|'dm'|'voice'|'group'|'category'|'news'|'store'|'unknown';
+export declare enum ChannelTypeA {
+    text = 0,
+    dm = 1,
+    voice = 2,
+    group = 3,
+    category = 4,
+    news = 5,
+    store = 6,
+    unknown = 7,
+}
 export type GetType<T extends unknown[]> =
     T extends [Arg<infer N, infer T>]
         ? { [id in N]: T }

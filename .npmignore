@@ -5,3 +5,5 @@ nodemon.json
 .idea/
 .eslintrc.yaml
 .github
+.eslintrc
+.eslintignore
