@@ -1,4 +1,4 @@
-import { User, Snowflake, Message, GuildMember, Channel, Role } from 'discord.js';
+import { User, Snowflake, Message, GuildMember, Channel, Role, Emoji } from 'discord.js';
 export const ArgParseErrors: { [key: string]: string; } = {
     'InvalidNumber': 'The provided number was invalid',
     'InvalidString': 'The provided string was invalid',
@@ -12,6 +12,7 @@ export const ArgParseErrors: { [key: string]: string; } = {
     'UnknownUser': 'The provided argument was not a user',
     'UnknownMember': 'The provided argument was not a member',
     'UnknownChannel': 'The provided argument was not a channel',
+    'UnknownEmoji': 'The provided argument was not a emoji',
     'InvalidChannelType': 'The provided channel argument was not included in the array bound',
     'UnknownRole': 'The provided argument was not a role',
     'MessageMissing': 'Message object was missing or invalid',
@@ -36,7 +37,8 @@ export const RegexList = {
     userOrMember: new RegExp("^(?:<@!?)?(\\d{17,21})>?$"),
     channel: new RegExp("^(?:<#)?(\\d{17,21})>?$"),
     role: new RegExp("^(?:<@&)?(\\d{17,21})>?$"),
-    emoji: new RegExp("(<a?)?:\\w+:(\\d{18}>)?"),
+    emoji: new RegExp("^(<a?)?:(\\w+):(\\d{18}>)$"),
+    unicodeEmoji: new RegExp("(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])"),
     snowflake: new RegExp("^(\\d{17,21})$"),
     email: new RegExp(/^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i)
 };
@@ -76,21 +78,13 @@ export interface ChannelArg<N extends string> extends Arg<N, Channel | undefined
     type(s: ChannelType[]): this;
 }
 export interface RoleArg<N extends string> extends Arg<N, Role | undefined> {}
+export interface EmojiArg<N extends string> extends Arg<N, Emoji> {}
 
 export interface UserExtended extends User {
     member?: GuildMember;
 }
 export type ChannelType = 'text'|'dm'|'voice'|'group'|'category'|'news'|'store'|'unknown';
-export declare enum ChannelTypeA {
-    text = 0,
-    dm = 1,
-    voice = 2,
-    group = 3,
-    category = 4,
-    news = 5,
-    store = 6,
-    unknown = 7,
-}
+export type EmojiType = 'global'|'unicode';
 export type GetType<T extends unknown[]> =
     T extends [Arg<infer N, infer T>]
         ? { [id in N]: T }

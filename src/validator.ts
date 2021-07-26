@@ -7,6 +7,8 @@ import {
     ArgParseInterface,
     GetType,
     UserExtended,
+    ChannelType,
+    EmojiType,
     // Args
     IntArg,
     AnyArg,
@@ -16,9 +18,9 @@ import {
     MemberArg,
     ChannelArg,
     RoleArg,
-    ChannelType
+    EmojiArg
 } from './types';
-import { Snowflake, User, Message, Guild, GuildMember, Channel, Role } from 'discord.js';
+import { Snowflake, User, Message, Guild, GuildMember, Channel, Role, Emoji, SnowflakeUtil } from 'discord.js';
 
 abstract class ArgBase<N extends string, T> implements Arg<N, T> {
     constructor() {}
@@ -357,6 +359,62 @@ class RoleArgParser<N extends string> extends ArgBase<N, Role | undefined> imple
     }
 }
 
+class EmojiArgParser<N extends string> extends ArgBase<N, Emoji> implements EmojiArg<N> {
+    parse(emoji: string, message?: Message) {
+        if (!message)
+            throw new ArgParseError({
+                arg: this._id,
+                key: 'MessageMissing',
+                got: message,
+                expected: Message.name,
+            });
+        let _emojiMatch = emoji.match(RegexList.emoji);
+        let _isUnicode = false,
+            _isEmoji = !!_emojiMatch,
+            _isAnimated = false;
+        if(!_isEmoji) {
+            _isUnicode = RegexList.unicodeEmoji.test(emoji);
+            if(_isUnicode)
+                _isEmoji = false;
+        } else _isAnimated = _emojiMatch![1] === '<a';
+
+        if(!_isEmoji && !_isUnicode) {
+            throw new ArgParseError({
+                arg: this._id,
+                key: 'UnknownEmoji',
+                got: emoji,
+                expected: Emoji.name,
+            });
+        } else if(_isEmoji) {
+            return new Emoji(message.client, {
+                animated: _isAnimated,
+                id: _emojiMatch![3].slice(0, -1),
+                name: _emojiMatch![2]
+            });
+        } else {
+            return new Emoji(message.client, {
+                animated: false,
+                id: null,
+                name: emoji
+            });
+        }
+    }
+
+    type(s: EmojiType[]) {
+        return this.constraint((v: Emoji): Emoji => {
+            let _type: EmojiType = v.id ? 'global' : 'unicode';
+            if(!s.includes(_type))
+                throw new ArgParseError({
+                    arg: this._id,
+                    key: 'InvalidEmojiType',
+                    expected: s,
+                    got: _type
+                });
+            return v;
+        });
+    }
+}
+
 /*
 * AVTypes
 */
@@ -368,6 +426,7 @@ const AVUser = <N extends string>(): UserArg<N> => new UserArgParser();
 const AVMember = <N extends string>(): MemberArg<N> => new MemberArgParser();
 const AVChannel = <N extends string>(): ChannelArg<N> => new ChannelArgParser();
 const AVRole = <N extends string>(): RoleArg<N> => new RoleArgParser();
+const AVEmoji = <N extends string>(): EmojiArg<N> => new EmojiArgParser();
 
 /*
 * AVCheckers
@@ -416,5 +475,6 @@ export {
     AVMember as member,
     AVChannel as channel,
     AVRole as role,
+    AVEmoji as emoji,
     AVArgs as parse,
 };
